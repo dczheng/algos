@@ -44,6 +44,14 @@ int xN, log_flag;
 char FileName[100];
 void (*boundary)( double *x, double *y, int N );
 
+#define myprint( fd, s, a, N ) {\
+    int i;\
+    fprintf( fd, s );\
+    for( i=0; i<N; i++ )\
+        fprintf( fd, "%g ", a[i] );\
+    fprintf( fd, "\n" );\
+}
+
 void Crank_Nicolson_test() {
 
     struct CN_Data p;
@@ -82,22 +90,17 @@ void Crank_Nicolson_test() {
 
     sprintf( buf, "%s.dat", FileName );
     fd = fopen( buf, "w" );
-    fprintf( fd, "0 " );
+
     for( i=0; i<xN; i++ ) {
         if ( log_flag )
             x[i] = pow( 10, log10(xmin) + i * dx);
         else
             x[i] = xmin + i * dx;
-        fprintf( fd, "%g ", x[i] );
         y0[i] = (*f_0)(x[i], 0);
     }
-    fprintf( fd, "\n" );
 
-    fprintf( fd, "0 " );
-    for( i=0; i<xN; i++ ) {
-        fprintf( fd, "%g ", y0[i] );
-    }
-    fprintf( fd, "\n" );
+    myprint( fd, "0 ", x, xN );
+    myprint( fd, "0 ", y0, xN );
 
     p.y0 = y0;
     p.y = y;
@@ -125,11 +128,9 @@ void Crank_Nicolson_test() {
 
         CN_forward( dtt );
 
-        fprintf( fd, "%g ", t+dtt );
-        for( i=0; i<xN; i++ ) {
-            fprintf( fd, "%g ", y[i] );
-        }
-        fprintf( fd, "\n" );
+        sprintf( buf, "%g ", t+dtt );
+        myprint( fd, buf, y, xN );
+
     }
 
 
@@ -313,8 +314,10 @@ void main() {
 
     for( i=1; i<5; i++)
         for( j=0; j<2; j++ ) {
+            /*
             if ( i!=4 )
                 continue;
+                */
             model = i*10 + j;
             log_flag = j;
             printf( "Model_%i%i ...\n", i, j );
