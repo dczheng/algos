@@ -185,7 +185,7 @@ void CN_single_forward() {
 
     }
 
-    (*cn.boundary)( left, right, cn.x, tmid );
+    (*cn.boundary)( left, right, cn.x, cn.xN, tmid );
     A[0] = C[cn.xN-1] = 0;
     B[0] = left[0];
     C[0] = left[1];

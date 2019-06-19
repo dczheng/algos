@@ -33,7 +33,7 @@ double f_ones( double x, double t ){
     return 1;
 }
 
-void boundary_zeros( double *left, double *right, double *x, double t ){
+void boundary_zeros( double *left, double *right, double *x, int N, double t ){
     left[0] = 1;
     left[1] = -1;
     left[2] = 0;
@@ -47,7 +47,7 @@ MYFUNC f_a, f_b, f_c, f_d, f_0, f_th;
 double xmax, xmin, dt, dtt, t0, t1;
 int xN, type;
 char FileName[100];
-void (*boundary)( double *left, double *right, double *x, double t );
+void (*boundary)( double *left, double *right, double *x, int N, double t );
 
 #define myprint( fd, s, a, N ) {\
     int i;\

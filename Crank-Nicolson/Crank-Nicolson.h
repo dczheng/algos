@@ -12,7 +12,7 @@ struct CN_Data{
     MYFUNC f_b;
     MYFUNC f_c;
     MYFUNC f_d;
-    void (*boundary)( double *left, double *right, double *x, double t );
+    void (*boundary)( double *left, double *right, double *x, int N, double t );
     void (*condition)( double *y, int N );
 
 };
