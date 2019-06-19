@@ -15,7 +15,8 @@ def delta_fun( x ):
            np.exp( -np.power((x-x0)/a, 2) )
 
 
-for mj in range(0,2):
+for mj in range(0,3):
+
     fig, axs = plt.subplots( 1, 4, figsize=(4*4, 4) )
 
     for mi in range(1,5):

@@ -3,6 +3,7 @@
 struct CN_Data cn;
 
 static double *y_cur, *y_later, *dx1, *dx2, t_cur, *A, *B, *C, *D;
+static double left[3], right[3];
 
 void CN_init( struct CN_Data p) {
 
@@ -32,7 +33,7 @@ void CN_init( struct CN_Data p) {
             dx1 = malloc( sizeof( double ) * cn.xN );
             for( i=0; i<cn.xN; i++ )
                 cn.x[i] = cn.xmin * pow( 10, i * dx);
-            for( i=0; i<cn.xN-1; i++ ) {
+            for( i=0; i<cn.xN-1; i++ )
                 dx1[i] = cn.x[i+1] - cn.x[i];
             break;
 
@@ -118,11 +119,10 @@ void CN_single_forward() {
 
             }
 
-            TridMat( A+1, B+1, C+1, D+1, y_later+1, cn.xN-2, 0 );
             break;
 
         case 1:
-            for( i=2; i<cn.xN; i++ ) {
+            for( i=1; i<cn.xN-1; i++ ) {
 
                 k = cn.t_step;
                 a = (*cn.f_a)( cn.x[i], tmid );
@@ -130,19 +130,35 @@ void CN_single_forward() {
                 c = (*cn.f_c)( cn.x[i], tmid );
                 d = (*cn.f_d)( cn.x[i], tmid );
 
-                t1 = dx1[i-1] * dx1[i-1];
-                t2 = dx1[i-1] * dx1[i-2];
-                A[i-1] = -0.5 * a/t2;
-                B[i-1] =  0.5 * (a/t1 + a/t2  + b / dx1[i-1] );
-                C[i-1] =  0.5 * ( 2/k -  a/t1 - b/dx1[i-1] - c );
-                D[i-1] =  0.5 * ( a/t2 * y_cur[i-2]
-                                - (a/t1 + a/t2 + b/dx1[i-1]) * y_cur[i-1]
-                                + ( a/t1 + b/dx1[i-1] + c + 2/k ) * y_cur[i] )
+                t1 = dx1[i] * dx1[i];
+                t2 = dx1[i] * dx1[i-1];
+                A[i] = -0.5 * a/t2;
+                B[i] =  0.5 * (a/t1 + a/t2  + b / dx1[i] );
+                C[i] =  0.5 * ( 2/k -  a/t1 - b/dx1[i] - c );
+                D[i] =  0.5 * ( a/t2 * y_cur[i-1]
+                                - (a/t1 + a/t2 + b/dx1[i]) * y_cur[i]
+                                + ( a/t1 + b/dx1[i] + c + 2/k ) * y_cur[i+1] )
                         + d;
+                if ( D[i] > 100 ) {
+                    printf(
+                            "i: %i\n"
+                        "x: %g %g %g\n"
+                        "a:%g, b:%g, c:%g, d:%g\n"
+                        "t1:%g, t2:%g, dx1:%g, k:%g\n"
+                        "y_cur: %g %g %g\n"
+                        "D: %g\n",
+                        i,
+                        cn.x[i-1], cn.x[i], cn.x[i+1],
+                        a, b, c, d,
+                        t1, t2, dx1[i], k,
+                        y_cur[i-1], y_cur[i], y_cur[i+1],
+                        D[i]
+                        );
+                    exit(0);
+                }
 
             }
 
-            TridMat( A+1, B+1, C+1, D+1, y_later+2, cn.xN-2, 0 );
             break;
 
         case 2:
@@ -165,15 +181,33 @@ void CN_single_forward() {
 
             }
 
-            TridMat( A+1, B+1, C+1, D+1, y_later+1, cn.xN-2, 0 );
             break;
 
     }
 
-    //print_ABCD();
+    (*cn.boundary)( left, right, tmid );
+    A[0] = C[cn.xN-1] = 0;
+    B[0] = left[0];
+    C[0] = left[1];
+    D[0] = left[2];
+    A[cn.xN-1] = right[0];
+    B[cn.xN-1] = right[1];
+    D[cn.xN-1] = right[2];
+    TridMat( A, B, C, D, y_later, cn.xN, 1 );
 
-    (*cn.boundary)( cn.x, y_later, cn.xN );
-
+    /*
+    double flag;
+    flag = 0;
+    for ( i=0; i<cn.xN; i++ )
+        if ( isnan(y_later[i]) ) {
+            flag = 1;
+            break;
+        }
+    if ( flag ) {
+        print_ABCD();
+        exit(0);
+    }
+    */
 }
 
 void CN_forward( double t_forward ) {

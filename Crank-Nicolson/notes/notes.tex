@@ -152,6 +152,39 @@
         \end{split}
     \end{equation}
 
+    \begin{equation}
+        \begin{split}
+            & j \equiv i-1
+            \\
+            &A_{j} f_{j-1}^{n+1} + B_{j} f_{j}^{n+1} + C_{j} f_{i+1}^{n+1} = D_{j}, \quad j \in [1, N-2]
+            \\
+            &A_{j} =
+            -\frac{a}{2\Delta x_{j,1} \Delta x_{j-1,1}}
+            \\
+            &B_{j} =
+            \frac{a}{2(\Delta x_{j,1})^2}
+            +\frac{a}{2\Delta x_{j,1} \Delta x_{j-1,1}}
+            +\frac{b}{2 \Delta x_{j,1}}
+            \\
+            &C_{j} =
+            \frac{1}{k}
+            -\frac{a}{2 (\Delta x_{j,1})^2}
+            -\frac{b}{2\Delta x_{j,1}}
+            -\frac{c}{2}
+            \\
+            &D_{j} =
+            \frac{a}{2\Delta x_{j,1}, \Delta x_{j-1,1}}f_{j-1}^n
+            \\
+            &\quad +\left(-\frac{a}{2(\Delta x_{j,1})^2}
+            - \frac{a}{2\Delta x_{j,1} \Delta x_{j-1,1}} -\frac{b}{2\Delta x_{j,1}}\right) f_{j}^n
+            \\
+            &\quad +\left(\frac{a}{2(\Delta x_{j,1})^2} + \frac{b}{2\Delta x_{j,1}} + \frac{c}{2}
+            +\frac{1}{k}\right) f_{j+1}^n
+            \\
+            &\quad + d \\
+        \end{split}
+    \end{equation}
+
 \subsection{any step}
 
     \begin{equation}

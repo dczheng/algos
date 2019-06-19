@@ -33,16 +33,21 @@ double f_ones( double x, double t ){
     return 1;
 }
 
-void boundary_zeros( double *x, double *y, int N ){
-    y[0] = y[N-1] = 0;
+void boundary_zeros( double *left, double *right, double t ){
+    left[0] = 1;
+    left[1] = -1;
+    left[2] = 0;
+    right[0] = 1;
+    right[1] = -1;
+    right[2] = 0;
 }
 
 
 MYFUNC f_a, f_b, f_c, f_d, f_0, f_th;
 double xmax, xmin, dt, dtt, t0, t1;
-int xN, log_flag;
+int xN, type;
 char FileName[100];
-void (*boundary)( double *x, double *y, int N );
+void (*boundary)( double *left, double *right, double t );
 
 #define myprint( fd, s, a, N ) {\
     int i;\
@@ -78,24 +83,28 @@ void Crank_Nicolson_test() {
     if ( boundary == NULL )
         boundary = boundary_zeros;
 
-    y0 = malloc( sizeof( double ) * xN );
-    y = malloc( sizeof( double ) * xN );
-    x = malloc( sizeof( double ) * xN );
-    if ( log_flag ) {
-        dx =  log10(xmax/xmin) / ( xN-1  );
-    }
-    else {
-        dx =  (xmax-xmin) / ( xN-1  );
-    }
-
     sprintf( buf, "%s.dat", FileName );
     fd = fopen( buf, "w" );
 
+    y0 = malloc( sizeof( double ) * xN );
+    y = malloc( sizeof( double ) * xN );
+    x = malloc( sizeof( double ) * xN );
+
+    switch ( type ) {
+        case 0:
+            dx =  (xmax-xmin) / ( xN-1  );
+            for( i=0; i<xN; i++ )
+                x[i] = xmin + i * dx;
+            break;
+        case 1:
+        case 2:
+            dx =  log10(xmax/xmin) / ( xN-1  );
+            for( i=0; i<xN; i++ )
+                x[i] = pow( 10, log10(xmin) + i * dx);
+            break;
+    }
+
     for( i=0; i<xN; i++ ) {
-        if ( log_flag )
-            x[i] = pow( 10, log10(xmin) + i * dx);
-        else
-            x[i] = xmin + i * dx;
         y0[i] = (*f_0)(x[i], 0);
     }
 
@@ -114,15 +123,8 @@ void Crank_Nicolson_test() {
     p.boundary = boundary;
     p.xmax = xmax;
     p.xmin = xmin;
-
-    if ( log_flag ) {
-        p.x = x;
-        p.type = 2;
-    }
-    else {
-        p.x = NULL;
-        p.type = 0;
-    }
+    p.type = type;
+    p.x = x;
 
     CN_init( p );
 
@@ -173,24 +175,6 @@ void Crank_Nicolson_test() {
     free( x );
     fclose( fd );
 
-}
-
-void boundary_linear( double *x, double *y, int N ){
-    y[0] = (y[2]-y[1]) / (x[2]-x[1]) * (x[0]-x[1]) + y[1];
-    y[N-1] = (y[N-2]-y[N-3]) / (x[N-2]-x[N-3]) * (x[N-1]-x[N-2]) + y[N-2];
-}
-
-void boundary_10( double *x, double *y, int N ){
-    y[0] = 1;
-    y[N-1] = 0;
-}
-
-void boundary_ylog( double *x, double *y, int N ){
-    //y[0] = 0;
-    //y[N-1] = 10000;
-    //
-    y[0] = exp( log(y[2]/y[1]) / (x[2]-x[1]) * (x[0]-x[1]) + log(y[1]));
-    y[N-1] = exp( log(y[N-2]/y[N-3]) / (x[N-2]-x[N-3]) * (x[N-1]-x[N-2]) + log(y[N-2]));
 }
 
 /***************************************************/
@@ -315,13 +299,16 @@ void main() {
     boundary = NULL;
 
     for( i=1; i<5; i++)
-        for( j=0; j<2; j++ ) {
+        for( j=0; j<3; j++ ) {
             /*
             if ( i!=4 )
                 continue;
                 */
+            type = j;
+
+            if ( i>1 || j != 1 )
+                continue;
             model = i*10 + j;
-            log_flag = j;
             printf( "Model_%i%i ...\n", i, j );
             sprintf( FileName, "Model_%i%i", i, j );
             switch ( model ){
@@ -336,6 +323,7 @@ void main() {
                     break;
 
                 case 11:
+                case 12:
                     printf( "Model 1 [unequal] for a=1\n" );
                     f_a = f_a11;
                     f_b = f_b11;
@@ -356,6 +344,7 @@ void main() {
                     break;
 
                 case 21:
+                case 22:
                     printf( "Model 1 [unequal] for a=-1\n" );
                     f_a = f_a21;
                     f_b = f_b21;
@@ -377,6 +366,7 @@ void main() {
                     break;
 
                 case 31:
+                case 32:
 
                     printf( "Model 2 [unequal] for a=1\n" );
                     f_a = f_a31;
@@ -398,7 +388,9 @@ void main() {
                     xmin = -5;
                     xmax = 20;
                     break;
+
                 case 41:
+                case 42:
                     printf( "Model 3 for a=1\n" );
                     f_a = f_a41;
                     f_b = f_b41;
