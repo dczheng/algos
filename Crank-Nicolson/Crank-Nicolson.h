@@ -1,12 +1,13 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include "math.h"
 
 typedef double (*MYFUNC)( double, double );
 
 struct CN_Data{
     double *x, t_step, *y0, *y, xmin, xmax, t_start;
-    int xN;
+    int xN, type;
     MYFUNC f_a;
     MYFUNC f_b;
     MYFUNC f_c;

@@ -117,9 +117,11 @@ void Crank_Nicolson_test() {
 
     if ( log_flag ) {
         p.x = x;
+        p.type = 2;
     }
     else {
         p.x = NULL;
+        p.type = 0;
     }
 
     CN_init( p );

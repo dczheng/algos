@@ -1,61 +1,62 @@
 #include "Crank-Nicolson.h"
 
-static double *x, *dx1, *dx2, *y, *y1, t_step,
-              *y0, *A, *B, *C, *D, dx, xmax, xmin, t_cur, t_start;
-static int xN, equal_space;
-static MYFUNC f_a;
-static MYFUNC f_b;
-static MYFUNC f_c;
-static MYFUNC f_d;
-static void (*boundary)( double *x, double *y, int );
+struct CN_Data cn;
+
+static double *y_cur, *y_later, *dx1, *dx2, t_cur, *A, *B, *C, *D;
 
 void CN_init( struct CN_Data p) {
 
+    double dx;
     int i;
-    xN = p.xN;
-    t_step = p.t_step;
-    f_a = p.f_a;
-    f_b = p.f_b;
-    f_c = p.f_c;
-    f_d = p.f_d;
-    boundary = p.boundary;
-    y = p.y;
-    t_cur = t_start = p.t_start;
+    cn = p;
 
-    y0 = malloc( sizeof( double ) * xN );
-    y1 = malloc( sizeof( double ) * xN );
-    memcpy( y0, p.y0, sizeof(double) *xN );
+    t_cur = cn.t_start;
+    y_cur   = malloc( sizeof( double ) * cn.xN );
+    y_later = malloc( sizeof( double ) * cn.xN );
+    memcpy( y_cur, cn.y0, sizeof(double) * cn.xN );
 
-    if ( p.x != NULL ) {
-        equal_space = 0;
-        x = p.x;
-        dx1 = malloc( sizeof( double ) * xN );
-        dx2 = malloc( sizeof( double ) * xN );
+    switch ( cn.type ) {
 
-        for( i=0; i<xN-2; i++ ) {
-            dx1[i] = x[i+1] - x[i];
-            dx2[i] = x[i+2] - x[i];
-        }
-        dx1[xN-2] = x[xN-1] - x[xN-2];
+        case 0:
+            printf( "use equal step\n" );
+            dx = ( cn.xmax-cn.xmin ) / ( cn.xN-1 );
+            cn.x = malloc( sizeof( double ) * cn.xN );
+            for( i=0; i<cn.xN; i++ )
+                cn.x[i] = cn.xmin + i * dx;
+            break;
+
+        case 1:
+            printf( "use log step\n" );
+            dx = log10(cn.xmax/cn.xmin) / ( cn.xN-1 );
+            cn.x = malloc( sizeof( double ) * cn.xN );
+            dx1 = malloc( sizeof( double ) * cn.xN );
+            for( i=0; i<cn.xN; i++ )
+                cn.x[i] = cn.xmin * pow( 10, i * dx);
+            for( i=0; i<cn.xN-1; i++ ) {
+                dx1[i] = cn.x[i+1] - cn.x[i];
+            break;
+
+        case 2:
+            dx1 = malloc( sizeof( double ) * cn.xN );
+            dx2 = malloc( sizeof( double ) * cn.xN );
+            for( i=0; i<cn.xN-2; i++ ) {
+                dx1[i] = cn.x[i+1] - cn.x[i];
+                dx2[i] = cn.x[i+2] - cn.x[i];
+            }
+            dx1[cn.xN-2] = cn.x[cn.xN-1] - cn.x[cn.xN-2];
+            break;
+
+        default:
+            printf( "ERROR" );
+            exit(0);
+
     }
-    else {
-        equal_space = 1;
-        xmax = p.xmax;
-        xmin = p.xmin;
-        dx = ( xmax-xmin ) / ( xN-1 );
-        x = malloc( sizeof( double ) * xN );
-        for( i=0; i<xN; i++ )
-            x[i] = xmin + i * dx;
 
-    }
+    A = malloc( sizeof(double)*cn.xN );
+    B = malloc( sizeof(double)*cn.xN );
+    C = malloc( sizeof(double)*cn.xN );
+    D = malloc( sizeof(double)*cn.xN );
 
-    A = malloc( sizeof(double)*xN );
-    B = malloc( sizeof(double)*xN );
-    C = malloc( sizeof(double)*xN );
-    D = malloc( sizeof(double)*xN );
-
-    if ( equal_space )
-        printf( "User equal space step\n" );
 
 }
 
@@ -64,22 +65,22 @@ void print_ABCD() {
     int i;
 
     printf( "A: " );
-    for( i=0; i<xN; i++ )
+    for( i=0; i<cn.xN; i++ )
         printf( "%g ", A[i]);
     printf( "\n" );
 
     printf( "B: " );
-    for( i=0; i<xN; i++ )
+    for( i=0; i<cn.xN; i++ )
         printf( "%g ", B[i]);
     printf( "\n" );
 
     printf( "C: " );
-    for( i=0; i<xN; i++ )
+    for( i=0; i<cn.xN; i++ )
         printf( "%g ", C[i]);
     printf( "\n" );
 
     printf( "D: " );
-    for( i=0; i<xN; i++ )
+    for( i=0; i<cn.xN; i++ )
         printf( "%g ", D[i]);
     printf( "\n" );
 }
@@ -87,62 +88,91 @@ void print_ABCD() {
 void CN_single_forward() {
 
     int i;
-    double a, b, c, d, tmid, h, k, h2;
+    double a, b, c, d, tmid, h, k, h2, t1, t2;
 
-    tmid = t_cur + t_step / 2.0;
+    tmid = t_cur + cn.t_step / 2.0;
 
-    if ( equal_space ) {
+    switch ( cn.type ){
 
-        k = t_step;
-        h = dx;
-        h2 = h*h;
+        case 0:
 
-        for( i=1; i<xN-1; i++ ) {
+            k = cn.t_step;
+            h = cn.x[1]-cn.x[0];
+            h2 = h*h;
 
-             a = (*f_a)( x[i], tmid );
-             b = (*f_b)( x[i], tmid );
-             c = (*f_c)( x[i], tmid );
-             d = (*f_d)( x[i], tmid );
-             //printf( "%g %g %g %g\n", a, b, c, d );
+            for( i=1; i<cn.xN-1; i++ ) {
 
-             A[i] = -( 2*k*a - k*h*b );
-             B[i] = 4*h2 + 4*k*a - 2*h2*k*c;
-             C[i] = -(2*k*a+k*h*b);
+                a = (*cn.f_a)( cn.x[i], tmid );
+                b = (*cn.f_b)( cn.x[i], tmid );
+                c = (*cn.f_c)( cn.x[i], tmid );
+                d = (*cn.f_d)( cn.x[i], tmid );
 
-             D[i] = ( 2*k*a-k*h*b ) * y0[i-1]
-                  + ( 4*h2-4*k*a+2*h2*k*c ) * y0[i]
-                  + ( 2*k*a + k*h*b ) * y0[i+1]
-                  + 4*h2*k*d;
+                A[i] = -( 2*k*a - k*h*b );
+                B[i] = 4*h2 + 4*k*a - 2*h2*k*c;
+                C[i] = -(2*k*a+k*h*b);
 
-        }
+                D[i] = ( 2*k*a-k*h*b ) * y_cur[i-1]
+                 + ( 4*h2-4*k*a+2*h2*k*c ) * y_cur[i]
+                 + ( 2*k*a + k*h*b ) * y_cur[i+1]
+                 + 4*h2*k*d;
 
-    }
-    else {
+            }
 
-        for( i=1; i<xN-1; i++ ) {
+            TridMat( A+1, B+1, C+1, D+1, y_later+1, cn.xN-2, 0 );
+            break;
 
-             a = (*f_a)( x[i], tmid );
-             b = (*f_b)( x[i], tmid );
-             c = (*f_c)( x[i], tmid );
-             d = (*f_d)( x[i], tmid );
-             //printf( "%g %g %g %g\n", a, b, c, d );
+        case 1:
+            for( i=2; i<cn.xN; i++ ) {
 
-             A[i] = -a / (dx1[i-1]*dx2[i-1]) + b / (2*dx2[i-1]);
-             B[i] = 1/t_step + a / (dx1[i]*dx1[i-1]) - c/2;
-             C[i] = -a / ( dx1[i]*dx2[i-1]) - b / (2*dx2[i-1]);
+                k = cn.t_step;
+                a = (*cn.f_a)( cn.x[i], tmid );
+                b = (*cn.f_b)( cn.x[i], tmid );
+                c = (*cn.f_c)( cn.x[i], tmid );
+                d = (*cn.f_d)( cn.x[i], tmid );
 
-             D[i] = ( a / (dx1[i-1]*dx2[i-1]) - b / (2*dx2[i-1]) ) * y0[i-1]
-                  + ( 1/t_step - a / (dx1[i]*dx1[i-1]) + c / 2 ) * y0[i]
-                  + ( a / (dx1[i]*dx2[i-1]) + b / (2*dx2[i-1]) ) * y0[i+1]
-                  + d;
+                t1 = dx1[i-1] * dx1[i-1];
+                t2 = dx1[i-1] * dx1[i-2];
+                A[i-1] = -0.5 * a/t2;
+                B[i-1] =  0.5 * (a/t1 + a/t2  + b / dx1[i-1] );
+                C[i-1] =  0.5 * ( 2/k -  a/t1 - b/dx1[i-1] - c );
+                D[i-1] =  0.5 * ( a/t2 * y_cur[i-2]
+                                - (a/t1 + a/t2 + b/dx1[i-1]) * y_cur[i-1]
+                                + ( a/t1 + b/dx1[i-1] + c + 2/k ) * y_cur[i] )
+                        + d;
 
-        }
+            }
+
+            TridMat( A+1, B+1, C+1, D+1, y_later+2, cn.xN-2, 0 );
+            break;
+
+        case 2:
+            for( i=1; i<cn.xN-1; i++ ) {
+
+                k = cn.t_step;
+                a = (*cn.f_a)( cn.x[i], tmid );
+                b = (*cn.f_b)( cn.x[i], tmid );
+                c = (*cn.f_c)( cn.x[i], tmid );
+                d = (*cn.f_d)( cn.x[i], tmid );
+
+                A[i] = -a / (dx1[i-1]*dx2[i-1]) + b / (2*dx2[i-1]);
+                B[i] = 1/k + a / (dx1[i]*dx1[i-1]) - c/2;
+                C[i] = -a / ( dx1[i]*dx2[i-1]) - b / (2*dx2[i-1]);
+
+                D[i] = ( a / (dx1[i-1]*dx2[i-1]) - b / (2*dx2[i-1]) ) * y_cur[i-1]
+                    + ( 1/k - a / (dx1[i]*dx1[i-1]) + c / 2 ) * y_cur[i]
+                    + ( a / (dx1[i]*dx2[i-1]) + b / (2*dx2[i-1]) ) * y_cur[i+1]
+                    + d;
+
+            }
+
+            TridMat( A+1, B+1, C+1, D+1, y_later+1, cn.xN-2, 0 );
+            break;
+
     }
 
     //print_ABCD();
 
-    TridMat( A+1, B+1, C+1, D+1, y1+1, xN-2, 0 );
-    (*boundary)( x, y1, xN );
+    (*cn.boundary)( cn.x, y_later, cn.xN );
 
 }
 
@@ -153,44 +183,50 @@ void CN_forward( double t_forward ) {
     t_end = t_cur + t_forward;
     printf( "[%g] --> [%g]\n", t_cur, t_end );
 
-    while( t_cur+t_step<=t_end ){
+    while( t_cur+ cn.t_step<=t_end ){
         CN_single_forward();;
-        t_cur += t_step;
+        t_cur += cn.t_step;
 
-        y_tmp = y0;
-        y0 = y1;
-        y1 = y_tmp;
+        y_tmp = y_cur;
+        y_cur = y_later;
+        y_later = y_tmp;
     }
 
     if ( t_cur < t_end ){
 
-        dt_tmp = t_step;
-        t_step = t_end - t_cur;
+        dt_tmp = cn.t_step;
+        cn.t_step = t_end - t_cur;
         CN_single_forward();
-        t_step = dt_tmp;
+        cn.t_step = dt_tmp;
 
-        y_tmp = y0;
-        y0 = y1;
-        y1 = y_tmp;
+        y_tmp = y_cur;
+        y_cur = y_later;
+        y_later = y_tmp;
     }
 
     t_cur = t_end;
-    memcpy( y, y0, sizeof( double ) * xN );
+    memcpy( cn.y, y_cur, sizeof( double ) * cn.xN );
 
 
 }
 
 void CN_free() {
 
-    free( y0 );
-    free( y1 );
+    free( y_cur );
+    free( y_later );
 
-    if ( !equal_space ) {
-        free( dx1 );
-        free( dx2 );
-    }
-    else {
-        free(x);
+    switch ( cn.type ) {
+        case 0:
+            free(cn.x);
+            break;
+        case 1:
+            free(cn.x);
+            free(dx1);
+            break;
+        case 2:
+            free( dx1 );
+            free( dx2 );
+            break;
     }
 
     free( A );
