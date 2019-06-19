@@ -33,7 +33,7 @@ double f_ones( double x, double t ){
     return 1;
 }
 
-void boundary_zeros( double *left, double *right, double t ){
+void boundary_zeros( double *left, double *right, double *x, double t ){
     left[0] = 1;
     left[1] = -1;
     left[2] = 0;
@@ -47,7 +47,7 @@ MYFUNC f_a, f_b, f_c, f_d, f_0, f_th;
 double xmax, xmin, dt, dtt, t0, t1;
 int xN, type;
 char FileName[100];
-void (*boundary)( double *left, double *right, double t );
+void (*boundary)( double *left, double *right, double *x, double t );
 
 #define myprint( fd, s, a, N ) {\
     int i;\
@@ -125,6 +125,7 @@ void Crank_Nicolson_test() {
     p.xmin = xmin;
     p.type = type;
     p.x = x;
+    p.condition = NULL;
 
     CN_init( p );
 
@@ -304,10 +305,14 @@ void main() {
             if ( i!=4 )
                 continue;
                 */
+            if ( j==1 )
+                continue;
             type = j;
 
+            /*
             if ( i>1 || j != 1 )
                 continue;
+                */
             model = i*10 + j;
             printf( "Model_%i%i ...\n", i, j );
             sprintf( FileName, "Model_%i%i", i, j );

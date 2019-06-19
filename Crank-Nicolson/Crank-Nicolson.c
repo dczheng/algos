@@ -185,7 +185,7 @@ void CN_single_forward() {
 
     }
 
-    (*cn.boundary)( left, right, tmid );
+    (*cn.boundary)( left, right, cn.x, tmid );
     A[0] = C[cn.xN-1] = 0;
     B[0] = left[0];
     C[0] = left[1];
@@ -194,6 +194,9 @@ void CN_single_forward() {
     B[cn.xN-1] = right[1];
     D[cn.xN-1] = right[2];
     TridMat( A, B, C, D, y_later, cn.xN, 1 );
+
+    if ( cn.condition != NULL )
+        (*cn.condition)( y_cur );
 
     /*
     double flag;
