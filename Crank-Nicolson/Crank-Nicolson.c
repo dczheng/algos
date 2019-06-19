@@ -196,7 +196,7 @@ void CN_single_forward() {
     TridMat( A, B, C, D, y_later, cn.xN, 1 );
 
     if ( cn.condition != NULL )
-        (*cn.condition)( y_cur );
+        (*cn.condition)( y_cur, cn.xN );
 
     /*
     double flag;
