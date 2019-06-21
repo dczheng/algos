@@ -26,6 +26,7 @@ void CN_init( struct CN_Data p) {
                 cn.x[i] = cn.xmin + i * dx;
             break;
 
+
         case 1:
             dx1 = malloc( sizeof( double ) * cn.xN );
             dx2 = malloc( sizeof( double ) * cn.xN );

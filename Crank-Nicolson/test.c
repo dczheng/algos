@@ -434,7 +434,7 @@ void main() {
     xN = 1000;
 
     for( i=1; i<5; i++)
-        for( j=0; j<2; j++ ) {
+        for( j=0; j<3; j++ ) {
             /*
             if ( i!=4 )
                 continue;
@@ -490,8 +490,8 @@ void main() {
                     f_0 = NULL;
                     boundary = boundary_dirichlet;
                     break;
-                case 30:
 
+                case 30:
                     f_a = f_ones;
                     f_b = NULL;
                     f_c = f_c3_log;
@@ -504,7 +504,6 @@ void main() {
                     break;
 
                 case 31:
-
                     f_a = f_a3;
                     f_b = f_b3;
                     f_c = f_c3;
@@ -528,7 +527,6 @@ void main() {
                     break;
 
                 case 41:
-                case 42:
                     f_a = f_a4;
                     f_b = f_b4;
                     f_c = f_c4;

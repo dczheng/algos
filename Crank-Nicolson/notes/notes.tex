@@ -80,96 +80,96 @@
         \end{split}
     \end{equation}
 
-\subsection{log step}
-
-    \begin{equation}
-        \Delta x_{i,j} \equiv x_{i+j} - x_i
-    \end{equation}
-
-    \begin{equation}
-        \begin{split}
-            & \frac{\partial f}{\partial x} =
-            \frac{f_{i}^n -f_{i-1}^n + f_{i}^{n+1} -f_{i-1}^{n+1} }
-                {2 \Delta x_{i-1,1}}
-            \\
-            \frac{\partial^2 f}{\partial x^2} &=
-            \frac{1}{2}\left(\frac{x_{i+1}+x_i}{2} - \frac{x_i+x_{i-1}}{2}\right)^{-1}
-            \\
-            & \quad \left(
-            \frac{f_{i+1}^n-f_{i}^n}{\Delta x_{i,1}}
-            -\frac{f_{i}^n-f_{i-1}^n}{\Delta x_{i-1,1}}
-            +\frac{f_{i+1}^{n+1}-f_{i}^{n+1}}{\Delta x_{i,1}}
-            -\frac{f_{i}^{n+1}-f_{i-1}^{n+1}}{\Delta x_{i-1,1}}
-            \right)
-            \\
-            &=\frac{f_{i+1}^n + f_{i+1}^{n+1}}
-                {\Delta x_{i,1} \Delta x_{i-1,2}}
-            - \frac{f_i^n + f_i^{n+1}}
-                {\Delta x_{i,1} \Delta x_{i-1,1}}
-            + \frac{f_{i-1}^n + f_{i-1}^{n+1}}
-                {\Delta x_{i-1,1} \Delta x_{i-1,2}}
-        \end{split}
-    \end{equation}
-
-    \begin{equation}
-        \begin{split}
-            \frac{1}{k}\left(f_i^{n+1} - f_i^n\right) &=
-            \\
-            & a\left[
-                \frac{f_{i+1}^n + f_{i+1}^{n+1}}
-                {\Delta x_{i,1} \Delta x_{i-1,2}}
-                - \frac{f_i^n + f_i^{n+1}}
-                {\Delta x_{i,1} \Delta x_{i-1,1}}
-                + \frac{f_{i-1}^n + f_{i-1}^{n+1}}
-                    {\Delta x_{i-1,1} \Delta x_{i-1,2}}
-                     \right]
-            \\
-                 & + \frac{b}{2} \left[ 
-                        \frac{f_{i}^n -f_{i-1}^n+f_{i}^{n+1}-f_{i-1}^{n+1}}
-                            {\Delta x_{i-1,1}}
-                     \right]
-            \\
-            & + \frac{c}{2} \left[
-                    \left( f_i^n + f_i^{n+1} \right)
-                     \right]
-            \\
-            & + d
-        \end{split}
-    \end{equation}
-
-    \begin{equation}
-        \begin{split}
-            &A_{i} f_{i-1}^{n+1} + B_{i} f_{i}^{n+1} + C_{i} f_{i+1}^{n+1} = D_{i}, \quad i \in [1, N-2]
-            \\
-            &A_{i} =
-            -\frac{a}{\Delta x_{i-1,1}\Delta x_{i-1,2}} + \frac{b}{2\Delta x_{i-1,1}}
-            \\
-            &B_{i} =
-            \frac{a}{\Delta x_{i,1} \Delta x_{i-1,1}} -\frac{b}{2 \Delta x_{i-1,1}} + \frac{1}{k} -\frac{c}{2}
-            \\
-            &C_{i} =
-            -\frac{a}{\Delta x_{i,1} \Delta x_{i-1,2}}
-            \\
-            &D_{i} =
-            \left(
-            \frac{a}{\Delta x_{i-1,1} x_{i-1,2}} - \frac{b}{2 \Delta x_{i-1,1}}
-            \right)
-            f_{i-1}^n
-            \\
-            & \quad +
-            \left(
-            -\frac{a}{\Delta x_{i,1} \Delta x_{i-1,1}} + \frac{b}{2 \Delta x_{i-1,1}} + \frac{c}{2} + \frac{1}{k}
-            \right)
-            f_{i}^n
-            \\
-            &\quad +
-            \frac{a}{\Delta x_{i,1} \Delta x_{i-1,2}}
-            f_{i+1}^n
-            \\
-            &\quad + d \\
-        \end{split}
-    \end{equation}
-
+%\subsection{log step}
+%
+%    \begin{equation}
+%        \Delta x_{i,j} \equiv x_{i+j} - x_i
+%    \end{equation}
+%
+%    \begin{equation}
+%        \begin{split}
+%            & \frac{\partial f}{\partial x} =
+%            \frac{f_{i}^n -f_{i-1}^n + f_{i}^{n+1} -f_{i-1}^{n+1} }
+%                {2 \Delta x_{i-1,1}}
+%            \\
+%            \frac{\partial^2 f}{\partial x^2} &=
+%            \frac{1}{2}\left(\frac{x_{i+1}+x_i}{2} - \frac{x_i+x_{i-1}}{2}\right)^{-1}
+%            \\
+%            & \quad \left(
+%            \frac{f_{i+1}^n-f_{i}^n}{\Delta x_{i,1}}
+%            -\frac{f_{i}^n-f_{i-1}^n}{\Delta x_{i-1,1}}
+%            +\frac{f_{i+1}^{n+1}-f_{i}^{n+1}}{\Delta x_{i,1}}
+%            -\frac{f_{i}^{n+1}-f_{i-1}^{n+1}}{\Delta x_{i-1,1}}
+%            \right)
+%            \\
+%            &=\frac{f_{i+1}^n + f_{i+1}^{n+1}}
+%                {\Delta x_{i,1} \Delta x_{i-1,2}}
+%            - \frac{f_i^n + f_i^{n+1}}
+%                {\Delta x_{i,1} \Delta x_{i-1,1}}
+%            + \frac{f_{i-1}^n + f_{i-1}^{n+1}}
+%                {\Delta x_{i-1,1} \Delta x_{i-1,2}}
+%        \end{split}
+%    \end{equation}
+%
+%    \begin{equation}
+%        \begin{split}
+%            \frac{1}{k}\left(f_i^{n+1} - f_i^n\right) &=
+%            \\
+%            & a\left[
+%                \frac{f_{i+1}^n + f_{i+1}^{n+1}}
+%                {\Delta x_{i,1} \Delta x_{i-1,2}}
+%                - \frac{f_i^n + f_i^{n+1}}
+%                {\Delta x_{i,1} \Delta x_{i-1,1}}
+%                + \frac{f_{i-1}^n + f_{i-1}^{n+1}}
+%                    {\Delta x_{i-1,1} \Delta x_{i-1,2}}
+%                     \right]
+%            \\
+%                 & + \frac{b}{2} \left[ 
+%                        \frac{f_{i}^n -f_{i-1}^n+f_{i}^{n+1}-f_{i-1}^{n+1}}
+%                            {\Delta x_{i-1,1}}
+%                     \right]
+%            \\
+%            & + \frac{c}{2} \left[
+%                    \left( f_i^n + f_i^{n+1} \right)
+%                     \right]
+%            \\
+%            & + d
+%        \end{split}
+%    \end{equation}
+%
+%    \begin{equation}
+%        \begin{split}
+%            &A_{i} f_{i-1}^{n+1} + B_{i} f_{i}^{n+1} + C_{i} f_{i+1}^{n+1} = D_{i}, \quad i \in [1, N-2]
+%            \\
+%            &A_{i} =
+%            -\frac{a}{\Delta x_{i-1,1}\Delta x_{i-1,2}} + \frac{b}{2\Delta x_{i-1,1}}
+%            \\
+%            &B_{i} =
+%            \frac{a}{\Delta x_{i,1} \Delta x_{i-1,1}} -\frac{b}{2 \Delta x_{i-1,1}} + \frac{1}{k} -\frac{c}{2}
+%            \\
+%            &C_{i} =
+%            -\frac{a}{\Delta x_{i,1} \Delta x_{i-1,2}}
+%            \\
+%            &D_{i} =
+%            \left(
+%            \frac{a}{\Delta x_{i-1,1} x_{i-1,2}} - \frac{b}{2 \Delta x_{i-1,1}}
+%            \right)
+%            f_{i-1}^n
+%            \\
+%            & \quad +
+%            \left(
+%            -\frac{a}{\Delta x_{i,1} \Delta x_{i-1,1}} + \frac{b}{2 \Delta x_{i-1,1}} + \frac{c}{2} + \frac{1}{k}
+%            \right)
+%            f_{i}^n
+%            \\
+%            &\quad +
+%            \frac{a}{\Delta x_{i,1} \Delta x_{i-1,2}}
+%            f_{i+1}^n
+%            \\
+%            &\quad + d \\
+%        \end{split}
+%    \end{equation}
+%
 \subsection{any step}
 
     \begin{equation}
