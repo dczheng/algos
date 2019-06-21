@@ -2,7 +2,7 @@
 
 struct CN_Data cn;
 
-static double *y_cur, *y_later, *dx1, *dx2, t_cur, *A, *B, *C, *D;
+static double *y_cur, *y_later, *dx1, *dx2, t_cur, *A, *B, *C, *D, *t1, *t2, *t3;
 static double left[3], right[3];
 
 void CN_init( struct CN_Data p) {
@@ -30,21 +30,26 @@ void CN_init( struct CN_Data p) {
             printf( "use log step\n" );
             dx = log10(cn.xmax/cn.xmin) / ( cn.xN-1 );
             cn.x = malloc( sizeof( double ) * cn.xN );
-            dx1 = malloc( sizeof( double ) * cn.xN );
             for( i=0; i<cn.xN; i++ )
-                cn.x[i] = cn.xmin * pow( 10, i * dx);
-            for( i=0; i<cn.xN-1; i++ )
-                dx1[i] = cn.x[i+1] - cn.x[i];
-            break;
+                cn.x[i] = cn.xmin * pow(10, i*dx);
 
         case 2:
             dx1 = malloc( sizeof( double ) * cn.xN );
             dx2 = malloc( sizeof( double ) * cn.xN );
+            t1 = malloc( sizeof( double ) * cn.xN );
+            t2 = malloc( sizeof( double ) * cn.xN );
+            t3 = malloc( sizeof( double ) * cn.xN );
             for( i=0; i<cn.xN-2; i++ ) {
                 dx1[i] = cn.x[i+1] - cn.x[i];
                 dx2[i] = cn.x[i+2] - cn.x[i];
             }
             dx1[cn.xN-2] = cn.x[cn.xN-1] - cn.x[cn.xN-2];
+
+            for( i=1; i<cn.xN-1; i++ ) {
+                t1[i] = dx1[i-1] * dx2[i-1];
+                t2[i] = dx1[i] * dx1[i-1];
+                t3[i] = dx1[i] * dx2[i-1];
+            }
             break;
 
         default:
@@ -89,7 +94,7 @@ void print_ABCD() {
 void CN_single_forward() {
 
     int i;
-    double a, b, c, d, tmid, h, k, h2, t1, t2;
+    double a, b, c, d, tmid, h, k, h2;
 
     tmid = t_cur + cn.t_step / 2.0;
 
@@ -130,30 +135,19 @@ void CN_single_forward() {
                 c = (*cn.f_c)( cn.x[i], tmid );
                 d = (*cn.f_d)( cn.x[i], tmid );
 
-                t1 = dx1[i] * dx1[i];
-                t2 = dx1[i] * dx1[i-1];
-                A[i] = -0.5 * a/t2;
-                B[i] =  0.5 * (a/t1 + a/t2  + b / dx1[i] );
-                C[i] =  0.5 * ( 2/k -  a/t1 - b/dx1[i] - c );
-                D[i] =  0.5 * ( a/t2 * y_cur[i-1]
-                                - (a/t1 + a/t2 + b/dx1[i]) * y_cur[i]
-                                + ( a/t1 + b/dx1[i] + c + 2/k ) * y_cur[i+1] )
-                        + d;
-                if ( D[i] > 100 ) {
-                    printf(
-                            "i: %i\n"
-                        "x: %g %g %g\n"
-                        "a:%g, b:%g, c:%g, d:%g\n"
-                        "t1:%g, t2:%g, dx1:%g, k:%g\n"
-                        "y_cur: %g %g %g\n"
-                        "D: %g\n",
-                        i,
-                        cn.x[i-1], cn.x[i], cn.x[i+1],
-                        a, b, c, d,
-                        t1, t2, dx1[i], k,
-                        y_cur[i-1], y_cur[i], y_cur[i+1],
-                        D[i]
-                        );
+                A[i] =   -a/t1[i] + b/(2*dx1[i-1]);
+                B[i] =    a/t2[i] - b/(2*dx1[i-1]) - c/2 + 1/k;
+                C[i] =   -a/t3[i];
+                D[i] =  ( a/t1[i] - b/(2*dx1[i-1])) * y_cur[i-1]
+                      + (-a/t2[i] + b/(2*dx1[i-1]) + c/2 + 1/k ) * y_cur[i]
+                      +   a/t3[i] * y_cur[i+1]
+                      + d;
+
+                if ( i== 100 )
+                    printf( "%g\n", D[i] );
+
+                if ( isnan( D[i] ) ) {
+                    printf( "%g %g %g\n", y_cur[i-1], y_cur[i], y_cur[i+1] );
                     exit(0);
                 }
 
@@ -170,14 +164,13 @@ void CN_single_forward() {
                 c = (*cn.f_c)( cn.x[i], tmid );
                 d = (*cn.f_d)( cn.x[i], tmid );
 
-                A[i] = -a / (dx1[i-1]*dx2[i-1]) + b / (2*dx2[i-1]);
-                B[i] = 1/k + a / (dx1[i]*dx1[i-1]) - c/2;
-                C[i] = -a / ( dx1[i]*dx2[i-1]) - b / (2*dx2[i-1]);
-
-                D[i] = ( a / (dx1[i-1]*dx2[i-1]) - b / (2*dx2[i-1]) ) * y_cur[i-1]
-                    + ( 1/k - a / (dx1[i]*dx1[i-1]) + c / 2 ) * y_cur[i]
-                    + ( a / (dx1[i]*dx2[i-1]) + b / (2*dx2[i-1]) ) * y_cur[i+1]
-                    + d;
+                A[i] =  -a/t1[i] + b/(2*dx2[i-1]);
+                B[i] =   a/t2[i] - c/2 + 1/k;
+                C[i] =  -a/t3[i] - b/(2*dx2[i-1]);
+                D[i] = ( a/t1[i] - b/(2*dx2[i-1]) ) * y_cur[i-1]
+                     + (-a/t2[i] + c/2 + 1/k) * y_cur[i]
+                     + ( a/t3[i] + b/(2*dx2[i-1]) ) * y_cur[i+1]
+                     + d;
 
             }
 
@@ -258,11 +251,12 @@ void CN_free() {
             break;
         case 1:
             free(cn.x);
-            free(dx1);
-            break;
         case 2:
             free( dx1 );
             free( dx2 );
+            free( t1 );
+            free( t2 );
+            free( t3 );
             break;
     }
 

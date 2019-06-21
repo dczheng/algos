@@ -17,11 +17,18 @@ def delta_fun( x ):
 
 for mj in range(0,3):
 
-    if mj == 1:
+    #if mj == 1:
+    #    continue
+
+    if mj != 1:
         continue
+
     fig, axs = plt.subplots( 1, 4, figsize=(4*4, 4) )
 
     for mi in range(1,5):
+
+        if mi != 1:
+            continue
 
         #if mi != 4:
         #    continue
@@ -70,4 +77,4 @@ for mj in range(0,3):
         ax.set_xlabel( r'$\rm x$' )
 
     plt.tight_layout()
-    plt.savefig( 'Model_%i.png'%mj )
+    plt.savefig( 'test_%i.png'%mj )

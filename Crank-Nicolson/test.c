@@ -305,14 +305,16 @@ void main() {
             if ( i!=4 )
                 continue;
                 */
+            /*
             if ( j==1 )
                 continue;
+                */
+
             type = j;
 
-            /*
             if ( i>1 || j != 1 )
                 continue;
-                */
+
             model = i*10 + j;
             printf( "Model_%i%i ...\n", i, j );
             sprintf( FileName, "Model_%i%i", i, j );
