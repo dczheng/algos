@@ -11,24 +11,19 @@ matplotlib.style.use( 'ggplot' )
 def delta_fun( x ):
     a = 0.01
     x0 = 0.1
-    return 1 / ( a * np.sqrt(np.pi) ) * \
+    r =  1 / ( a * np.sqrt(np.pi) ) * \
            np.exp( -np.power((x-x0)/a, 2) )
+    r[r<1e-10] = 0
+    return r
 
 
-for mj in range(0,3):
-
-    #if mj == 1:
-    #    continue
-
-    if mj != 1:
-        continue
+for mj in range(0,2):
 
     fig, axs = plt.subplots( 1, 4, figsize=(4*4, 4) )
 
     for mi in range(1,5):
 
-        if mi != 1:
-            continue
+        print( 'plot %i_%i'%(mi, mj) )
 
         #if mi != 4:
         #    continue

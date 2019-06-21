@@ -27,13 +27,6 @@ void CN_init( struct CN_Data p) {
             break;
 
         case 1:
-            printf( "use log step\n" );
-            dx = log10(cn.xmax/cn.xmin) / ( cn.xN-1 );
-            cn.x = malloc( sizeof( double ) * cn.xN );
-            for( i=0; i<cn.xN; i++ )
-                cn.x[i] = cn.xmin * pow(10, i*dx);
-
-        case 2:
             dx1 = malloc( sizeof( double ) * cn.xN );
             dx2 = malloc( sizeof( double ) * cn.xN );
             t1 = malloc( sizeof( double ) * cn.xN );
@@ -135,35 +128,6 @@ void CN_single_forward() {
                 c = (*cn.f_c)( cn.x[i], tmid );
                 d = (*cn.f_d)( cn.x[i], tmid );
 
-                A[i] =   -a/t1[i] + b/(2*dx1[i-1]);
-                B[i] =    a/t2[i] - b/(2*dx1[i-1]) - c/2 + 1/k;
-                C[i] =   -a/t3[i];
-                D[i] =  ( a/t1[i] - b/(2*dx1[i-1])) * y_cur[i-1]
-                      + (-a/t2[i] + b/(2*dx1[i-1]) + c/2 + 1/k ) * y_cur[i]
-                      +   a/t3[i] * y_cur[i+1]
-                      + d;
-
-                if ( i== 100 )
-                    printf( "%g\n", D[i] );
-
-                if ( isnan( D[i] ) ) {
-                    printf( "%g %g %g\n", y_cur[i-1], y_cur[i], y_cur[i+1] );
-                    exit(0);
-                }
-
-            }
-
-            break;
-
-        case 2:
-            for( i=1; i<cn.xN-1; i++ ) {
-
-                k = cn.t_step;
-                a = (*cn.f_a)( cn.x[i], tmid );
-                b = (*cn.f_b)( cn.x[i], tmid );
-                c = (*cn.f_c)( cn.x[i], tmid );
-                d = (*cn.f_d)( cn.x[i], tmid );
-
                 A[i] =  -a/t1[i] + b/(2*dx2[i-1]);
                 B[i] =   a/t2[i] - c/2 + 1/k;
                 C[i] =  -a/t3[i] - b/(2*dx2[i-1]);
@@ -250,8 +214,6 @@ void CN_free() {
             free(cn.x);
             break;
         case 1:
-            free(cn.x);
-        case 2:
             free( dx1 );
             free( dx2 );
             free( t1 );

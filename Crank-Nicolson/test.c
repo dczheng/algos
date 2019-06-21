@@ -2,6 +2,9 @@
 #include "Crank-Nicolson.h"
 #include "math.h"
 
+#define CUBE(X) ((X)*(X)*(X))
+#define SQR(X) ((X)*(X))
+
 void TridMat_test(){
 
     int i;
@@ -33,7 +36,18 @@ double f_ones( double x, double t ){
     return 1;
 }
 
-void boundary_zeros( double *left, double *right, double *x, int N, double t ){
+void boundary_dirichlet( double *left, double *right, double *x, int N, double t ){
+
+    left[0] = 1;
+    left[1] = 0;
+    left[2] = 0;
+    right[0] = 0;
+    right[1] = 1;
+    right[2] = 0;
+}
+
+void boundary_newmann( double *left, double *right, double *x, int N, double t ){
+
     left[0] = 1;
     left[1] = -1;
     left[2] = 0;
@@ -81,7 +95,7 @@ void Crank_Nicolson_test() {
         f_0 = f_zeros;
 
     if ( boundary == NULL )
-        boundary = boundary_zeros;
+        boundary = boundary_dirichlet;
 
     sprintf( buf, "%s.dat", FileName );
     fd = fopen( buf, "w" );
@@ -97,7 +111,6 @@ void Crank_Nicolson_test() {
                 x[i] = xmin + i * dx;
             break;
         case 1:
-        case 2:
             dx =  log10(xmax/xmin) / ( xN-1  );
             for( i=0; i<xN; i++ )
                 x[i] = pow( 10, log10(xmin) + i * dx);
@@ -179,94 +192,218 @@ void Crank_Nicolson_test() {
 }
 
 /***************************************************/
-double f_b1( double x, double t ){
+double f_b1_log( double x, double t ){
     return 1/exp(x);
+}
+
+double f_c1_log( double x, double t ){
+    return -2;
+}
+
+void bound1_log( double *left, double *right, double *x, int N, double t ){
+
+    double xx[4];
+    int i;
+    for( i=0; i<2; i++ ) {
+        xx[i] = exp(x[i]);
+        xx[3-i] = exp(x[N-1-i]);
+    }
+
+    left[2] = right[2] = 0;
+
+    left[0] = -SQR(xx[0]) / (xx[1]-xx[0]) + 1 - x[0];
+    left[1] = SQR(xx[0]) / (xx[1]-xx[0]);
+
+    right[0] = SQR(xx[3]) / (xx[2]-xx[3]);
+    right[1] = -SQR(xx[3]) / (xx[2]-xx[3]) + 1 - xx[3];
+
+}
+
+double f_a1( double x, double t ){
+    return x*x;
+}
+
+double f_b1( double x, double t ){
+    return x+1;
 }
 
 double f_c1( double x, double t ){
     return -2;
 }
 
-double f_a11( double x, double t ){
-    return x*x;
-}
+void bound1( double *left, double *right, double *x, int N, double t ){
 
-double f_b11( double x, double t ){
-    return x+1;
-}
+    left[2] = right[2] = 0;
 
-double f_c11( double x, double t ){
-    return -2;
+    left[0] = -SQR(x[0]) / (x[1]-x[0]) + 1 - x[0];
+    left[1] = SQR(x[0]) / (x[1]-x[0]);
+
+    right[0] = SQR(x[N-1]) / (x[N-2]-x[N-1]);
+    right[1] = -SQR(x[N-1]) / (x[N-2]-x[N-1]) + 1 - x[N-1];
+
 }
 
 /***************************************************/
 
-double f_b2( double x, double t ){
+double f_b2_log( double x, double t ){
     return -1/exp(x);
+}
+
+double f_c2_log( double x, double t ){
+    return -2;
+}
+
+void bound2_log( double *left, double *right, double *x, int N, double t ){
+
+    double xx[4];
+    int i;
+    for( i=0; i<2; i++ ) {
+        xx[i] = exp(x[i]);
+        xx[3-i] = exp(x[N-1-i]);
+    }
+
+    left[2] = right[2] = 0;
+
+    left[0] = -SQR(xx[0]) / (xx[1]-xx[0]) - 1 - x[0];
+    left[1] = SQR(xx[0]) / (xx[1]-xx[0]);
+
+    right[0] = SQR(xx[3]) / (xx[2]-xx[3]);
+    right[1] = -SQR(xx[3]) / (xx[2]-xx[3]) - 1 - xx[3];
+
+}
+
+double f_a2( double x, double t ){
+    return x*x;
+}
+
+double f_b2( double x, double t ){
+    return x-1;
 }
 
 double f_c2( double x, double t ){
     return -2;
 }
 
-double f_a21( double x, double t ){
-    return x*x;
-}
+void bound2( double *left, double *right, double *x, int N, double t ){
 
-double f_b21( double x, double t ){
-    return x-1;
-}
+    left[2] = right[2] = 0;
 
-double f_c21( double x, double t ){
-    return -2;
+    left[0] = -SQR(x[0]) / (x[1]-x[0]) - 1 - x[0];
+    left[1] = SQR(x[0]) / (x[1]-x[0]);
+
+    right[0] = SQR(x[N-1]) / (x[N-2]-x[N-1]);
+    right[1] = -SQR(x[N-1]) / (x[N-2]-x[N-1]) - 1 - x[N-1];
+
 }
 
 /***************************************************/
 
-double f_c3( double x, double t ){
+double f_c3_log( double x, double t ){
     return -(1+1/exp(x));
 }
 
-double f_a31( double x, double t ){
+void bound3_log( double *left, double *right, double *x, int N, double t ){
+
+    double xx[4];
+    int i;
+    for( i=0; i<2; i++ ) {
+        xx[i] = exp(x[i]);
+        xx[3-i] = exp(x[N-1-i]);
+    }
+
+    left[2] = right[2] = 0;
+
+    left[0] = -SQR(xx[0]) / (xx[1]-xx[0]) - x[0];
+    left[1] = SQR(xx[0]) / (xx[1]-xx[0]);
+
+    right[0] = SQR(xx[3]) / (xx[2]-xx[3]);
+    right[1] = -SQR(xx[3]) / (xx[2]-xx[3]) - xx[3];
+
+}
+
+double f_a3( double x, double t ){
     return x*x;
 }
 
-double f_b31( double x, double t ){
+double f_b3( double x, double t ){
     return x;
 }
 
-double f_c31( double x, double t ){
+double f_c3( double x, double t ){
     return -(1+1/x);
 }
 
+void bound3( double *left, double *right, double *x, int N, double t ){
+
+    left[2] = right[2] = 0;
+
+    left[0] = -SQR(x[0]) / (x[1]-x[0]) - x[0];
+    left[1] = SQR(x[0]) / (x[1]-x[0]);
+
+    right[0] = SQR(x[N-1]) / (x[N-2]-x[N-1]);
+    right[1] = -SQR(x[N-1]) / (x[N-2]-x[N-1]) - x[N-1];
+
+}
+
 /***************************************************/
-double f_a4( double x, double t ){
+double f_a4_log( double x, double t ){
     return exp(x);
 }
 
-double f_b4( double x, double t ){
+double f_b4_log( double x, double t ){
     return exp(x);
 }
 
-double f_c4( double x, double t ){
+double f_c4_log( double x, double t ){
     return -(2*exp(x)+1);
 }
 
-double f_a41( double x, double t ){
+void bound4_log( double *left, double *right, double *x, int N, double t ){
+
+    double xx[4];
+    int i;
+    for( i=0; i<2; i++ ) {
+        xx[i] = exp(x[i]);
+        xx[3-i] = exp(x[N-1-i]);
+    }
+
+    left[2] = right[2] = 0;
+
+    left[0] = -CUBE(xx[0]) / (xx[1]-xx[0]) - SQR(x[0]);
+    left[1] = CUBE(xx[0]) / (xx[1]-xx[0]);
+
+    right[0] = CUBE(xx[3]) / (xx[2]-xx[3]);
+    right[1] = -CUBE(xx[3]) / (xx[2]-xx[3]) - SQR(xx[3]);
+    //printf( "%g %g %g %g\n", left[0], left[1], right[0], right[1] );
+
+}
+
+double f_a4( double x, double t ){
     return x*x*x;
 }
 
-double f_b41( double x, double t ){
+double f_b4( double x, double t ){
     return 2*x*x;
 }
 
-double f_c41( double x, double t ){
+double f_c4( double x, double t ){
     return -2*x-1;
 }
 
+void bound4( double *left, double *right, double *x, int N, double t ){
+
+    left[2] = right[2] = 0;
+
+    left[0] = -CUBE(x[0]) / (x[1]-x[0]) - SQR(x[0]);
+    left[1] = CUBE(x[0]) / (x[1]-x[0]);
+
+    right[0] = CUBE(x[N-1]) / (x[N-2]-x[N-1]);
+    right[1] = -CUBE(x[N-1]) / (x[N-2]-x[N-1]) - SQR(x[N-1]);
+    //printf( "%g %g %g %g\n", left[0], left[1], right[0], right[1] );
+}
 /***************************************************/
 
-double f_delta( double x, double t ){
+double f_delta_log( double x, double t ){
     double a, x0, r;
     x = exp(x);
     a=0.01;
@@ -276,7 +413,7 @@ double f_delta( double x, double t ){
     return r;
 }
 
-double f_delta1( double x, double t ){
+double f_delta( double x, double t ){
     double a, x0, r;
     a=0.01;
     x0 = 0.1;
@@ -285,127 +422,121 @@ double f_delta1( double x, double t ){
     return r;
 }
 
-
 void main() {
 
     int i, j, model;
 
-    dt = 1e-4;
+    dt = 1e-3;
     t0 = 0;
     t1 = 5;
     dtt = 1;
-    f_0 = NULL;
     f_th = NULL;
     xN = 1000;
-    boundary = NULL;
 
     for( i=1; i<5; i++)
-        for( j=0; j<3; j++ ) {
+        for( j=0; j<2; j++ ) {
             /*
             if ( i!=4 )
-                continue;
-                */
-            /*
-            if ( j==1 )
                 continue;
                 */
 
             type = j;
 
-            if ( i>1 || j != 1 )
-                continue;
 
             model = i*10 + j;
             printf( "Model_%i%i ...\n", i, j );
             sprintf( FileName, "Model_%i%i", i, j );
             switch ( model ){
                 case 10:
-                    printf( "Model 1 [equal] for a=1\n" );
                     f_a = f_ones;
-                    f_b = f_b1;
-                    f_c = f_c1;
-                    f_d = f_delta;
-                    xmin = -6;
-                    xmax = 20;
+                    f_b = f_b1_log;
+                    f_c = f_c1_log;
+                    f_d = f_delta_log;
+                    f_0 = NULL;
+                    xmin = -10;
+                    xmax = 11;
+                    boundary = boundary_newmann;
                     break;
 
                 case 11:
-                case 12:
-                    printf( "Model 1 [unequal] for a=1\n" );
-                    f_a = f_a11;
-                    f_b = f_b11;
-                    f_c = f_c11;
-                    f_d = f_delta1;
+                    f_a = f_a1;
+                    f_b = f_b1;
+                    f_c = f_c1;
+                    f_d = f_delta;
                     xmin = 1e-5;
                     xmax = 1e5;
+                    f_0 = NULL;
+                    boundary = boundary_newmann;
                     break;
 
                 case 20:
-                    printf( "Model 1 [equal] for a=-1\n" );
                     f_a = f_ones;
-                    f_b = f_b2;
-                    f_c = f_c2;
-                    f_d = f_delta;
-                    xmin = -6;
-                    xmax = 20;
+                    f_b = f_b2_log;
+                    f_c = f_c2_log;
+                    f_d = f_delta_log;
+                    xmin = -10;
+                    xmax = 11;
+                    f_0 = NULL;
+                    boundary = boundary_dirichlet;
                     break;
 
                 case 21:
-                case 22:
-                    printf( "Model 1 [unequal] for a=-1\n" );
-                    f_a = f_a21;
-                    f_b = f_b21;
-                    f_c = f_c21;
-                    f_d = f_delta1;
+                    f_a = f_a2;
+                    f_b = f_b2;
+                    f_c = f_c2;
+                    f_d = f_delta;
                     xmin = 1e-5;
                     xmax = 1e5;
+                    f_0 = NULL;
+                    boundary = boundary_dirichlet;
                     break;
                 case 30:
 
-                    printf( "Model 2 [euqal] for a=1\n" );
                     f_a = f_ones;
                     f_b = NULL;
-                    f_c = f_c3;
-                    f_d = f_delta;
-                    xmin = -6;
-                    xmax = 20;
+                    f_c = f_c3_log;
+                    f_d = f_delta_log;
+                    xmin = -10;
+                    xmax = 11;
+                    f_0 = NULL;
                     xN = 300;
+                    boundary = boundary_newmann;
                     break;
 
                 case 31:
-                case 32:
 
-                    printf( "Model 2 [unequal] for a=1\n" );
-                    f_a = f_a31;
-                    f_b = f_b31;
-                    f_c = f_c31;
-                    f_d = f_delta1;
+                    f_a = f_a3;
+                    f_b = f_b3;
+                    f_c = f_c3;
+                    f_d = f_delta;
                     xmin = 1e-5;
                     xmax = 1e5;
                     xN = 300;
+                    f_0 = NULL;
+                    boundary = boundary_newmann;
                     break;
 
                 case 40:
-                    printf( "Model 3 for a=1\n" );
+                    f_a = f_a4_log;
+                    f_b = f_b4_log;
+                    f_c = f_c4_log;
+                    f_d = NULL;
+                    f_0 = f_delta_log;
+                    xmin = -10;
+                    xmax = 11;
+                    boundary = boundary_newmann;
+                    break;
+
+                case 41:
+                case 42:
                     f_a = f_a4;
                     f_b = f_b4;
                     f_c = f_c4;
                     f_d = NULL;
                     f_0 = f_delta;
-                    xmin = -5;
-                    xmax = 20;
-                    break;
-
-                case 41:
-                case 42:
-                    printf( "Model 3 for a=1\n" );
-                    f_a = f_a41;
-                    f_b = f_b41;
-                    f_c = f_c41;
-                    f_d = NULL;
-                    f_0 = f_delta1;
                     xmin = 1e-5;
                     xmax = 1e5;
+                    boundary = boundary_newmann;
                     break;
 
                 }
