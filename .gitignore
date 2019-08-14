@@ -6,3 +6,4 @@ test
 *.fls
 *.log
 *.xdv
+a.out
