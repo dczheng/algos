@@ -12,5 +12,3 @@ A implementation of fof.
 
 **Code:** FoF.
 
-# HEKUN LEE
-
