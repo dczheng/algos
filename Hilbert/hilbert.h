@@ -1,7 +1,8 @@
 /*
     dczheng
     created 2019-08-30
-    Reference: https://www.cs.dal.ca/research/techreports/cs-2006-07
+    Reference: ~/doc/hilbert.doc copyed from https://www.cs.dal.ca/research/techreports/cs-2006-07
+    http://pdebuyl.be/blog/2015/hilbert-curve.html
 */
 
 #include "stdio.h"
