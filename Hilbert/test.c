@@ -11,7 +11,7 @@
 
 void test_gc() {
 
-    u_int i, j, ii;
+    myint i, j, ii;
     for( i=0; i<8; i++ ) {
         j = gc(i);
         printf( "%4u: ", i );
@@ -26,7 +26,7 @@ void test_gc() {
 }
 
 void test_Rot() {
-    u_int i;
+    myint i;
 
     BITS = 8;
     i = 13;
@@ -48,7 +48,7 @@ void test_Rot() {
 
 void test_Ttrans() {
 
-    u_int a, g, aa, e1, d1, e2, d2, e, d;
+    myint a, g, aa, e1, d1, e2, d2, e, d;
 
     e1 = 10;
     d1 = 3;
@@ -79,7 +79,7 @@ void test_Ttrans() {
 }
 
 void test_hilbert() {
-    u_int p[2], idx, pp[2], i, j, dim, bits;
+    myint p[2], idx, pp[2], i, j, dim, bits;
     dim = 2;
     bits = 3;
     for( i=0; i<(1<<bits); i++ )
@@ -94,17 +94,17 @@ void test_hilbert() {
 }
 
 int hidx_compare2( const void *a, const void *b ) {
-    return ( ((u_int*)a)[2] > ((u_int*)b)[2] ) ? 1 : -1;
+    return ( ((myint*)a)[2] > ((myint*)b)[2] ) ? 1 : -1;
 }
 
 void test_hilbert2() {
-    u_int *p_idx, i, j, dim, bits, N, idx;
+    myint *p_idx, i, j, dim, bits, N, idx;
     FILE *fd;
     dim = 2;
     bits = 4;
     N = 1<<bits;
     printf( "N: %u\n", N );
-    p_idx = malloc( sizeof(u_int) * N * N  * 3 );
+    p_idx = malloc( sizeof(myint) * N * N  * 3 );
     for( i=0; i<N; i++ ) 
         for( j=0; j<N; j++ ) {
             idx = (i*N + j)*3;
@@ -113,7 +113,7 @@ void test_hilbert2() {
             hilbert_index( p_idx+idx+2, p_idx+idx, dim, bits );
         }
 
-    qsort( p_idx, N*N, sizeof(u_int)*3, hidx_compare2 );
+    qsort( p_idx, N*N, sizeof(myint)*3, hidx_compare2 );
 
     fd = fopen( "hidx2.dat", "w" );
     for( i=0; i<N; i++ ) 
@@ -127,17 +127,17 @@ void test_hilbert2() {
 }
 
 int hidx_compare3( const void *a, const void *b ) {
-    return ( ((u_int*)a)[3] > ((u_int*)b)[3] ) ? 1 : -1;
+    return ( ((myint*)a)[3] > ((myint*)b)[3] ) ? 1 : -1;
 }
 
 void test_hilbert3() {
-    u_int *p_idx, i, j, k, dim, bits, N, idx;
+    myint *p_idx, i, j, k, dim, bits, N, idx;
     FILE *fd;
     dim = 3;
     bits = 3;
     N = 1<<bits;
     printf( "N: %u\n", N );
-    p_idx = malloc( sizeof(u_int) * N * N * N  * 4 );
+    p_idx = malloc( sizeof(myint) * N * N * N  * 4 );
     for( i=0; i<N; i++ ) 
         for( j=0; j<N; j++ )
             for( k=0; k<N; k++ ) {
@@ -149,7 +149,7 @@ void test_hilbert3() {
             hilbert_index( p_idx+idx+3, p_idx+idx, dim, bits );
         }
 
-    qsort( p_idx, N*N*N, sizeof(u_int)*4, hidx_compare3 );
+    qsort( p_idx, N*N*N, sizeof(myint)*4, hidx_compare3 );
 
     fd = fopen( "hidx3.dat", "w" );
     for( i=0; i<N; i++ ) 
