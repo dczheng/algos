@@ -13,7 +13,7 @@ A implementation of fof.
 **Code:** FoF.
 
 ### Space-filling curve 
-Space-filling curve, Hilbert index
+Space-filling curve, Hilbert index.
 
 **Code:** Hilbert.
 
