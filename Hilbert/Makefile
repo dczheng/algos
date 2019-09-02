@@ -11,7 +11,7 @@ $(EXEC): $(OBJS)
 	$(CC) $(OPTS) $(OBJS) $(LIBS) -lm -o $(EXEC)
 
 %.o:%.c $(MY_INCL) Makefile
-	$(CC) $(OPTS) $(DEBUG) $(INCL) -c $< -o $@
+	$(CC) $(OPTS) -c $< -o $@
 
 .PHONY: clean
 

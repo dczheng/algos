@@ -9,12 +9,12 @@
 
 myint BITS, MASK, N_U_INT;
 
-myint gc( myint a ) {
+inline myint gc( myint a ) {
     a &= MASK;
     return ( a ^ ( a>>1 ) );
 }
 
-myint gc_inv( myint a ) {
+inline myint gc_inv( myint a ) {
     myint b, i;
     short n=BITS-1;
     a &= MASK;
@@ -33,7 +33,7 @@ myint gc_inv( myint a ) {
     return b;
 }
 
-myint dcgc( myint a ) {
+inline myint dcgc( myint a ) {
     myint b, t;
     a &= MASK;
     b = 1;
@@ -45,7 +45,7 @@ myint dcgc( myint a ) {
     return b-1;
 }
 
-myint rrot( myint a, myint n ) {
+inline myint rrot( myint a, myint n ) {
     a &= MASK;
     n %= BITS;
     while( n>0 ){
@@ -55,7 +55,7 @@ myint rrot( myint a, myint n ) {
     return a;
 }
 
-myint lrot( myint a, myint n ) {
+inline myint lrot( myint a, myint n ) {
     n %= BITS;
     while( n>0 ){
         a = ( a<<1 ) + ( (a&(1<<(BITS-1)))>>(BITS-1) );
@@ -65,15 +65,15 @@ myint lrot( myint a, myint n ) {
     return a;
 }
 
-myint Ttrans( myint a, myint e, myint d ) {
+inline myint Ttrans( myint a, myint e, myint d ) {
     return rrot( a^e, d+1 );
 }
 
-myint Ttrans_inv( myint a, myint e, myint d ) {
+inline myint Ttrans_inv( myint a, myint e, myint d ) {
     return lrot( a, d+1 ) ^ e;
 }
 
-myint ep( myint a ) {
+inline myint ep( myint a ) {
     a &= MASK;
     if ( a == 0 )
         return 0;
@@ -81,11 +81,11 @@ myint ep( myint a ) {
 }
 
 
-myint gd( myint a ) {
+inline myint gd( myint a ) {
     return dcgc( a );
 }
 
-myint dd( myint a ) {
+inline myint dd( myint a ) {
     a &= MASK;
     if ( a==0 )
         return 0;
@@ -96,7 +96,7 @@ myint dd( myint a ) {
 }
 
 void print_bin( myint a, int n ) {
-    short b, t;
+    short t;
 
     if ( n == 0 )
         n= BITS;

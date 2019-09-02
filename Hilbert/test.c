@@ -55,6 +55,7 @@ void test_Ttrans() {
     e2 = 11;
     d2 = 4;
 
+    d = 1;
     print_bin( Ttrans( e1, e1, d ), -1 );
     printf( "\n" );
 
@@ -163,7 +164,7 @@ void test_hilbert3() {
 
 }
 
-void main() {
+int main() {
 
     printf( "test:\n" );
     //test_gc();
@@ -172,5 +173,6 @@ void main() {
     //test_hilbert();
     test_hilbert2();
     test_hilbert3();
+    return 0;
 
 }

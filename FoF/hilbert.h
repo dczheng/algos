@@ -7,7 +7,8 @@
 
 #include "stdio.h"
 
-typedef unsigned int myint;
+//typedef unsigned int myint;
+#define myint int
 
 extern myint BITS, MASK;
 

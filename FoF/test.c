@@ -6,44 +6,43 @@
 int NTask, ThisTask;
 int *map, W, H;
 
-void main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {
 
     int Ncir, i, j, k, x, y, Ngroup;
-    time_t time1, time2;
-    struct tm *tb;
-    double r;
+    clock_t t0, t1;
+    double dt, dt_min, dt_max, dt_tot, r;
     FILE *fd;
 
     MPI_Init( &argc, &argv );
     MPI_Comm_rank( MPI_COMM_WORLD, &ThisTask );
     MPI_Comm_size( MPI_COMM_WORLD, &NTask );
 
-    Ncir = 200;
-    H = W = 4000;
+    Ncir = 3000;
+    H = W = 10000;
 
     map = malloc( sizeof(int) * W*H );
-    if ( ThisTask == 0 ) {
 
-        srand( 0 );
-        memset( map, 0, sizeof(int) * W*H );
+    srand( 0 );
+    memset( map, 0, sizeof(int) * W*H );
 
-        for( k=0; k<Ncir; k++ ) {
+    for( k=0; k<Ncir; k++ ) {
 
-            x = (int)( (double)rand() / RAND_MAX * ( W-10 ) + 5 );
-            y = (int)( (double)rand() / RAND_MAX * ( H-10 ) + 5 );
-            r = (double)rand() / RAND_MAX * ( W/200 ) + 5;
+        x = (int)( (double)rand() / RAND_MAX * ( W-10 ) + 5 );
+        y = (int)( (double)rand() / RAND_MAX * ( H-10 ) + 5 );
+        r = (double)rand() / RAND_MAX * ( W/200 ) + 5;
     
-            for( i=y-r; i<y+r; i++ ) {
-                for(j=x-r; j<x+r; j++ ) {
-                    if ( i<0 || i>H-1 
-                      || j<0 || j>W-1 )
-                        continue;
-                        if ( (i-y)*(i-y ) + (j-x)*(j-x) < r*r )
-                            map[ i*W + j ] = 1;
-                }
+        for( i=y-r; i<y+r; i++ ) {
+            for(j=x-r; j<x+r; j++ ) {
+                if ( i<0 || i>H-1 
+                  || j<0 || j>W-1 )
+                    continue;
+                    if ( (i-y)*(i-y ) + (j-x)*(j-x) < r*r )
+                        map[ i*W + j ] = 1;
             }
         }
+    }
     
+    if ( ThisTask == -1 ) {
         fd = fopen( "map.dat", "w" );
         for( i=0; i<H; i++ ) {
             for( j=0; j<W; j++ )
@@ -53,23 +52,29 @@ void main( int argc, char *argv[] ) {
         fclose( fd );
     }
 
-    MPI_Bcast( map, sizeof(int)*W*H, MPI_BYTE, 0, MPI_COMM_WORLD );
+    MPI_Barrier(MPI_COMM_WORLD);
 
-    time1 = time( NULL );
+    t0 = t1 = clock();
     fof_init( map, W, H );
-    time2 = time( NULL );
+    dt = (double)(clock()-t1) / CLOCKS_PER_SEC;
+    MPI_Reduce( &dt, &dt_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &dt, &dt_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &dt, &dt_tot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+    if ( ThisTask == 0 )
+        printf( "[fof_init] dt_min: %g, dt_max: %g, dt_mean: %g\n",
+                dt_min, dt_max, dt_tot/NTask );
 
-    printf( "[%i] init time: %li sec.\n", ThisTask, (int)difftime( time2, time1 ) );
+    //MPI_Barrier( MPI_COMM_WORLD );
 
-
-    MPI_Barrier( MPI_COMM_WORLD );
-
-    time1 = time( NULL );
+    t1 = clock();
     fof();
-    time2 = time( NULL );
-    printf( "[%i] fof time: %li sec.\n", ThisTask, (int)difftime( time2, time1 ) );
-    MPI_Barrier( MPI_COMM_WORLD );
-    exit(0);
+    dt = (double)(clock()-t1) / CLOCKS_PER_SEC;
+    MPI_Reduce( &dt, &dt_min, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &dt, &dt_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD );
+    MPI_Reduce( &dt, &dt_tot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD );
+    if ( ThisTask == 0 )
+        printf( "[fof] dt_min: %g, dt_max: %g, dt_mean: %g\n",
+                dt_min, dt_max, dt_tot/NTask );
 
     if ( ThisTask == 0 ) {
         for( i=0, Ngroup=0; i<W*H; i++ )
@@ -93,10 +98,11 @@ void main( int argc, char *argv[] ) {
         fclose( fd );
     }
 
-
     fof_free();
     free( map );
 
     MPI_Finalize();
+
+    return 0;
 
 }
